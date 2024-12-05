@@ -1,7 +1,7 @@
 from typing import Union
 from fastapi.encoders import jsonable_encoder
 from fastapi import FastAPI
-from llm.dto.request.recommend_request import *
+from agent.dto.request.recommend_request import *
 from util.env_manager import *
 
 
@@ -14,5 +14,3 @@ def read_root():
 @app.get("/recommendation")
 def requestMessage(request: RecommendRequest):
     title = request.title
-
-    return {title}
