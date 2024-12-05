@@ -1,5 +1,5 @@
 from pydantic import BaseModel
 
 class RecommendRequest(BaseModel):
-    title: str
-    description: str
+    user_id: int
+    question: str
