@@ -25,6 +25,7 @@ class RagUsecase():
         for chunk in chunks:
             embeddings.append(self.embedding_operator.execute(chunk))
         #  5. 디비에 저장.
+        
 
 
       

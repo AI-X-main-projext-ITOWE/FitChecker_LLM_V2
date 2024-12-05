@@ -19,8 +19,7 @@ async def analyze(llm, question: str):
 
     # LLM 호출
     result = await llm.agenerate([prompt_text])
-    if not result or not result.generations or not result.generations[0]:
-        logging.error("Invalid LLM response. No generations found.")
+    if not result or not hasattr(result, "generations") or not result.generations:
         return {
             "is_action_request": False,
             "is_advice_request": False,
@@ -28,8 +27,8 @@ async def analyze(llm, question: str):
         }
 
     # 응답 텍스트 가져오기
-    response_content = result.generations[0][0].text.strip() if result.generations[0] else ""
-    logging.debug(f"LLM Response: {response_content}")
+    generation = result.generations[0] if len(result.generations) > 0 else None
+    response_content = generation[0].text.strip() if generation and len(generation) > 0 else ""
 
     # 기본값 설정
     is_action_request = "'is_action_request': true" in response_content
@@ -38,7 +37,7 @@ async def analyze(llm, question: str):
 
     # Action Type 추출
     if is_action_request:
-        action_type_match = re.search(r"'action_type': '(\w+)'", response_content)
+        action_type_match = re.search(r"'action_type':\s*'(\w+)'", response_content)
         action_type = action_type_match.group(1) if action_type_match else None
 
     # 결과 반환

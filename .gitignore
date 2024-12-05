@@ -1,3 +1,4 @@
 .env
 cache/*
 cache_linux/* 
+__pycache__
