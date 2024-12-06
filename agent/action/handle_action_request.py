@@ -1,7 +1,7 @@
 from agent.action.alarm import alarm_notification
 from agent.action.count import exercise_count
 
-async def handle_action_request(action_type: str, action_data: dict):
+async def handle_action_request(action_type: str, action_data: dict) -> dict:
     if action_type == "alarm":
         return await alarm_notification(action_data)
 
