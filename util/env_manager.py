@@ -23,3 +23,9 @@ def get_json_folder_path():
 
 def get_sentence_transformer_model():
     return os.getenv("SENTENCE_TRANSFORMER_MODEL")
+
+def get_pdf_ocr_model():
+    return os.getenv("PDF_OCR_MODEL")
+
+def get_huggingface_token():
+    return os.getenv("HUGGINFACE_TOKEN")

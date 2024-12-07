@@ -23,10 +23,11 @@ class AgentUsecase:
 
         if action_or_advice.get("is_advice_request"):
             # 2단계 RAG
-            rag_result = ""  # RAG 처리 로직 추가 필요
+            rag_result = self.rag_usecase.extract_text(question)
             # 3단계 LLM 호출
             gpt_result = await self.gpt_usecase.request_advice_llm(user_id, question, rag_result)
-            return gpt_result
+            
+            return [gpt_result, rag_result]
 
         elif action_or_advice.get("is_action_request"):
             return {"action": "Action logic executed"}
