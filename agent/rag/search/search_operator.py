@@ -1,4 +1,4 @@
-from embedding_db.model.elasticsearch_creator import elastic_creator
+from agent.rag.embedding_db.model.elasticsearch_creator import elastic_creator
 
 
 class Elastic_Search():

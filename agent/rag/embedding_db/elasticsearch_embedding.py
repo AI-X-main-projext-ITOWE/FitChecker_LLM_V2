@@ -1,6 +1,6 @@
 from elasticsearch import Elasticsearch
 from util.env_manager import *
-from model.elasticsearch_creator import elastic_creator
+from agent.rag.embedding_db.model.elasticsearch_creator import *
 
 host = get_elasticsearch_url
 

@@ -1,15 +1,15 @@
-import logging
+from agent.action import handle_action_request
 from agent.gpt.history_by_user.memory.memory_manager import *
 from agent.gpt.model.llm_models import *
 from agent.gpt.classify.analyzer import *
 from agent.gpt.history_by_user.conversation_manager import *
-from agent.action.handle_action_request import handle_action_request
+
 
 class GptOperator:
     def __init__(self):
         openai_api_key = get_openai_api_key()
         self.model, self.system_message = get_gpt_model("gpt-4o-mini", openai_api_key, 0.7, 1000)
-
+    # 1단계 : advice or action 판단
     async def process_question(self, user_id: int, question: str) -> dict:
         # 시스템 메시지를 문자열로 변환하여 `analyze` 함수에 전달
         system_message_str = self.system_message.content
@@ -35,7 +35,7 @@ class GptOperator:
         return llm_input
 
 
-
+    # 3단계 : RAG + 현재 질문 + 과거 질문을 GPT에 전달에서 최종 결과값 전달.
     async def request_advice_llm(self, user_id: int, question: str, rag_context: str) -> str:
         """
         사용자 질문에 대한 LLM의 답변을 요청하고, 대화 기록을 관리합니다.
@@ -58,19 +58,21 @@ class GptOperator:
         llm_input = self.create_llm_input(question, chat_summary, rag_context)
 
         # LLM 호출
-        response = await self.model.agenerate([llm_input])
-        
-        
+        response = await self.model.agenerate([llm_input])  # 비동기 호출
+
         # 대화 기록 추가
         try:
+            # 응답 텍스트 추출 및 처리
             ai_response = response.generations[0][0].text.strip()
-            ormatted_response = ai_response.replace("\n", "\\n")
-            ormatted_response = ai_response.replace("\\n", "\n")
-            user_history_manager.add_message(question, ormatted_response)
-            print(f"LLM Response: {ormatted_response}")
+            formatted_response = ai_response.replace("\n", "\\n")
+            formatted_response = formatted_response.replace("\\n", "\n")
+
+            # 대화 기록 추가
+            user_history_manager.add_message(question, formatted_response)
+            print(f"LLM Response: {formatted_response}")
 
         except Exception as e:
             print(f"Error during adding message to history: {e}")
             raise
 
-        return ormatted_response
+        return formatted_response

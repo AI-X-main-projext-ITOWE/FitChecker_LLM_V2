@@ -1,52 +1,22 @@
-from typing import Union
-from fastapi.encoders import jsonable_encoder
-from fastapi import FastAPI, HTTPException
-from agent.dto.request.recommend_request import *
-from agent.dto.request.test_request import TestRequest
-from agent.gpt import gpt_operator
-from agent.gpt.gpt_operator import GptOperator
-from util.env_manager import *
-import uvicorn
+import sys
+import os
 
+# 프로젝트 루트 디렉토리를 sys.path에 추가
+sys.path.append(os.path.dirname(os.path.abspath(__file__)))
+
+from fastapi import FastAPI
+from agent.agent_usecase import AgentUsecase
+import uvicorn
+from agent.dto.request.recommend_request import RecommendRequest
 
 app = FastAPI()
-
-@app.get("/")
-def read_root():
-    return {"Hello": "LLM World"}
-
-@app.get("/recommendation")
-def requestMessage(request: RecommendRequest):
-    title = request.title
+agent_usecase = AgentUsecase()
 
 
-@app.post("/analizetest")
-async def request_message(request: TestRequest):
-    user_id = request.user_id
-    question = request.question
-
-    gpt_usecase = GptOperator()
-
-    analyzed_result = await gpt_usecase.process_question(user_id, question)
-    return {
-        "user_id": user_id,
-        "question": question,
-        "analysis": analyzed_result,
-    }
-
-@app.post("/gpttest")
-async def gpt_test(request: TestRequest):
-    gpt_usecase = GptOperator()
-
-    try:
-        result = await gpt_usecase.request_advice_llm(
-            user_id=request.user_id,
-            question=request.question,
-            rag_context=request.ragtext
-        )
-        return {"user_id": request.user_id, "question": request.question, "response": result}
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+@app.post("/api/v1/agent")
+async def agents(request: RecommendRequest):
+    response = await agent_usecase.execute(request)  # await 필수
+    return {"response": response}
 
 
 
