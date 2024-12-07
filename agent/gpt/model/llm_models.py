@@ -35,10 +35,7 @@ def get_gpt_model(model_name: str, openai_api_key: str, temperature: float, max_
 
 
 def get_langchain_model(llm: ChatOpenAI, user_id: int, summary="", new_content="") -> ConversationSummaryBufferMemory:
-    """
-    LangChain 메모리 모델 생성
-    """
-    return ConversationSummaryBufferMemory(
+    memory = ConversationSummaryBufferMemory(
         llm=llm,
         max_token_limit=1000,
         return_messages=True,
@@ -52,3 +49,5 @@ def get_langchain_model(llm: ChatOpenAI, user_id: int, summary="", new_content="
             f"새로운 대화:\n{new_content}"
         )
     )
+    print(f"LangChain Memory Initialized: {memory}")
+    return memory

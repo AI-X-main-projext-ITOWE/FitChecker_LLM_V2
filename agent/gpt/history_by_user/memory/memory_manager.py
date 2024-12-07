@@ -5,9 +5,6 @@ from agent.gpt.model.llm_models import get_langchain_model, ChatOpenAI  # 필요
 store = {}
 
 def get_Memory_manager(user_id: int, llm: ChatOpenAI) -> ConversationSummaryBufferMemory:
-    """
-    사용자 ID에 해당하는 ConversationSummaryBufferMemory 반환.
-    """
     if user_id in store:
         print(f"'{user_id}' 키가 존재합니다.")
         return store[user_id]
