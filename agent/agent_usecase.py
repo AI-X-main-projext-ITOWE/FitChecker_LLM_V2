@@ -37,6 +37,7 @@ class AgentUsecase:
         action_or_advice = await self.gpt_usecase.process_question(user_id, question)
 
         if action_or_advice.get("is_advice_request"):
+
             # 2단계: RAG 결과 가져오기 (필요시 처리)
             rag_result = ""  # RAG 처리 로직 추가 필요
             # 3단계: LLM을 사용하여 조언 생성
