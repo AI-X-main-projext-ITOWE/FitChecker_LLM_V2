@@ -3,6 +3,7 @@ from util.env_manager import *
 from langchain.memory import ConversationSummaryBufferMemory
 from langchain.schema import SystemMessage
 
+
 def get_gpt_model(model_name: str, openai_api_key: str, temperature: float, max_tokens: int) -> tuple[ChatOpenAI, SystemMessage]:
     """
     GPT 모델 생성
@@ -15,8 +16,7 @@ def get_gpt_model(model_name: str, openai_api_key: str, temperature: float, max_
             "- If the context does not contain enough information, use your general knowledge to provide a detailed and helpful response.\n"
             "- Never respond with 'It is up to you' or 'It is your decision.' The user is asking for your advice because they need guidance or lack the knowledge to decide.\n"
             "- Use the context provided to recommend exercises that are safe and effective.\n"
-            "- For health-related concerns (e.g., ankle pain, knee pain), recommend recovery exercises or stretches to alleviate the pain, and include detailed instructions on how to perform these exercises safely.\n"
-            "- If the user mentions pain or discomfort (e.g., 'My knee hurts'), provide actionable advice on recovery and suggest appropriate exercises or stretches. For example, for knee pain, you might recommend quad stretches, hamstring stretches, or low-impact activities like cycling or swimming.\n"
+            "- For health-related concerns (e.g., ankle pain), recommend recovery exercises or stretches to alleviate the pain.\n"
             "- Never give generic advice without considering the user's specific question or health condition.\n"
             "- Always be kind, supportive, and act as a smart and professional personal gym trainer. Your job is to empower the user with high-quality and actionable information.\n"
             "- Always provide responses in Korean, even if the input is in English.\n"
@@ -32,6 +32,7 @@ def get_gpt_model(model_name: str, openai_api_key: str, temperature: float, max_
         presence_penalty=0.6,
         frequency_penalty=0.4
     ), system_message
+
 
 def get_langchain_model(llm: ChatOpenAI, user_id: int, summary="", new_content="") -> ConversationSummaryBufferMemory:
     memory = ConversationSummaryBufferMemory(
