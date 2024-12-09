@@ -29,3 +29,6 @@ def get_pdf_ocr_model():
 
 def get_huggingface_token():
     return os.getenv("HUGGINFACE_TOKEN")
+
+def get_firebase_url():
+    return os.getenv("FIREBASE_URL")

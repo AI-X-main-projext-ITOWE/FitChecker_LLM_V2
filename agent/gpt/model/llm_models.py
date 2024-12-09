@@ -1,4 +1,5 @@
 from langchain_openai import ChatOpenAI
+from openai import OpenAI
 from util.env_manager import *
 from langchain.memory import ConversationSummaryBufferMemory
 from langchain.schema import SystemMessage
@@ -33,6 +34,31 @@ def get_gpt_model(model_name: str, openai_api_key: str, temperature: float, max_
         frequency_penalty=0.4
     ), system_message
 
+async def get_function_call_model(model_name: str, openai_api_key: str, question: str):
+    client = OpenAI(api_key=openai_api_key)
+    
+    # GPT-4 Function Call API 호출
+    response = client.chat.completions.create(  
+        model=model_name,  # GPT-4 모델 사용
+        messages=[{"role": "user", "content": str(question)}],
+        functions = [
+            {
+                "name": "create_alarm",
+                "description": "사용자의 내용을 보고 시간과 관련된것을 따로 빼서 문맥에 맞게 반드시 알맞는 답으로 너가 alarm_time에 넣어주고 나머지 내용들은 알맞게 반드시 요약해서 alarm_text에 넣어줘",
+                "parameters": {
+                    "type": "object",
+                    "properties": {
+                        "alarm_text": {"type": "string"},
+                        "alarm_time": {"type": "string"}
+                    },
+                    "required": ["alarm_text", "alarm_time"]
+                }
+            }
+        ],
+        function_call="auto"
+    )
+
+    return response
 
 def get_langchain_model(llm: ChatOpenAI, user_id: int, summary="", new_content="") -> ConversationSummaryBufferMemory:
     memory = ConversationSummaryBufferMemory(
