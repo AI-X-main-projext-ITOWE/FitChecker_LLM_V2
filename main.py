@@ -1,3 +1,10 @@
+import sys
+import os
+
+# 프로젝트 루트 디렉토리를 sys.path에 추가
+sys.path.append(os.path.dirname(os.path.abspath(__file__)))
+
+from fastapi import Body, FastAPI, Query
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from agent.agent_usecase import AgentUsecase
@@ -31,12 +38,9 @@ app.add_middleware(
 
 
 @app.post("/api/v1/agent")
-async def agents(request: RecommendRequest):
-    
-    response = await agent_usecase.execute(request)  # await 필수
-
+async def agents(request: RecommendRequest, input_type: str = Query(default="text"), audio_bytes: bytes = Body(None)):
+    response = await agent_usecase.execute(request, input_type, audio_bytes)
     return {"response": response}
-
 
 
 if __name__ == "__main__":

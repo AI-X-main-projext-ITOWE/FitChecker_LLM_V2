@@ -1,59 +1,67 @@
+import json
 import logging
-import re
+from typing import Dict, Any
 
-async def analyze(llm, question: str, system_message: str):
-    """
-    LLM을 사용하여 질문을 분석하고 의도 파악 결과를 반환합니다.
-    """
-    # 시스템 프롬프트와 사용자 질문을 결합하여 프롬프트 생성
+async def analyze(llm, question: str, system_message: str) -> Dict[str, Any]:
+
     prompt_text = (
         f"{system_message}\n\n"
         f"Analyze the user's request and determine its intent:\n"
         f"Question: {question}\n"
         "Classify the intent into one of the following:\n"
-        "- Action request: Examples include 'Set an alarm', 'Count exercise sets'.\n"
-        "- Advice request: Examples include 'I have back pain', 'Recommend exercises'.\n\n"
-        "If it is an action request, specify the action type (e.g., 'alarm', 'exercise_counter').\n\n"
+        "- Action request: Examples include 'Set an alarm', 'Count exercise sets', '알람을 맞춰줘'.\n"
+        "  Specifically for count, if the input includes '세트', '회', '번', or similar patterns (e.g., '2세트 15회'), it is likely to be an exercise_count request.\n"
+        "  Include the action type (e.g., 'alarm', 'exercise_counter') and required parameters.\n"
+        "- Advice request: Examples include 'I have back pain', 'Recommend exercises', '운동 추천해줘', '내 몸에 맞는 운동 알려줘'.\n"
+        "  These requests seek guidance, plans, or recommendations based on the user's context.\n"
+        "- Combination requests: If the question includes both action and advice (e.g., 'Plan a one-hour cardio exercise and set an alarm'), classify as both and provide details accordingly.\n\n"
+        "Additional considerations:\n"
+        "- Pay special attention to numeric inputs and their associated units (e.g., '세트', '회'). Ensure numbers are linked to their respective units to avoid misinterpretation.\n"
+        "- If both sets and reps are included (e.g., '2세트 10회'), associate the first number with sets and the second with reps.\n"
+        "- Handle cases where only one number is provided (e.g., '3세트', '10회'). Assume the number is for the mentioned unit, and default other parameters as needed.\n"
+        "- If no numbers are present or the input is vague (e.g., '운동 좀 하자'), set action_type to 'unknown' and action_data to {}.\n\n"
+        "Examples:\n"
+        "1. '2회 2세트 스쿼트 할래' -> {'sets': 2, 'reps_per_set': 2, 'exercise': '스쿼트'}\n"
+        "2. '10회 푸쉬업' -> {'sets': 1, 'reps_per_set': 10, 'exercise': '푸쉬업'}\n"
+        "3. '3세트 런지' -> {'sets': 3, 'reps_per_set': 0, 'exercise': '런지'} (reps_per_set은 누락 가능)\n"
+        "4. '팔굽혀펴기 10번' -> {'sets': 1, 'reps_per_set': 10, 'exercise': '팔굽혀펴기'}\n"
+        "5. '30분 러닝' -> {'sets': 1, 'reps_per_set': 0, 'exercise': '러닝', 'duration': '30분'}\n"
+        "6. '운동할래' -> {'sets': 0, 'reps_per_set': 0, 'exercise': 'unknown'}\n"
+        "7. '푸쉬업 세트 좀' -> {'sets': 'not_sure', 'reps_per_set': 'not_sure', 'exercise': '푸쉬업'}\n"
+        "\n"
         "Response format:\n"
-        "{'is_action_request': true/false, 'is_advice_request': true/false, 'action_type': 'type_of_action'}"
+        "{'is_action_request': true/false, 'is_advice_request': true/false, 'is_combination_request': true/false, 'action_type': 'type_of_action', 'action_data': {...}, 'advice_context': 'contextual_info'}"
     )
 
-    # LLM 호출
-    response = await llm.agenerate([prompt_text])
+    try:
+        # LLM 호출
+        response = await llm.agenerate([prompt_text])
+        response_content = response.generations[0][0].text.strip()
+        logging.info(f"LLM Response Content: {response_content}")
 
-    if not response or not hasattr(response, "generations") or not response.generations:
-        logging.warning("LLM 결과가 비어 있습니다. 기본값 반환.")
-        return {
+        # JSON 파싱
+        response_content = response_content.replace("'", "\"")
+        parsed_response = json.loads(response_content)
+        logging.info(f"Parsed Response: {parsed_response}")
+    except json.JSONDecodeError as e:
+        logging.error(f"JSON Decode Error: {e}, Raw Response: {response_content}")
+        parsed_response = {
             "is_action_request": False,
-            "is_advice_request": True,
-            "action_type": None,
+            "is_advice_request": False,
+            "is_combination_request": False,
+            "action_type": "unknown",
+            "action_data": {},
+            "advice_context": "Parsing error occurred. Unable to determine context."
+        }
+    except Exception as e:
+        logging.error(f"Unexpected error: {e}")
+        parsed_response = {
+            "is_action_request": False,
+            "is_advice_request": False,
+            "is_combination_request": False,
+            "action_type": "unknown",
+            "action_data": {},
+            "advice_context": "Unexpected error occurred."
         }
 
-    response_content = response.generations[0][0].text.strip()
-    logging.info(f"LLM Response Content: {response_content}")
-
-    # 기본값 설정
-    is_action_request = "'is_action_request': true" in response_content
-    is_advice_request = "'is_advice_request': true" in response_content
-    action_type = None
-
-    # Action Type 추출
-    if is_action_request:
-        action_type_match = re.search(r"'action_type':\s*'(\w+)'", response_content)
-        action_type = action_type_match.group(1) if action_type_match else None
-
-    # 응답 형식 검증 및 의도 파악 실패 시 기본값 설정
-    if not (is_action_request or is_advice_request):
-        logging.warning("의도를 파악하지 못했으므로 기본적으로 조언 요청으로 설정합니다.")
-        return {
-            "is_action_request": False,
-            "is_advice_request": True,
-            "action_type": None,
-        }
-
-    # 결과 반환
-    return {
-        "is_action_request": is_action_request,
-        "is_advice_request": is_advice_request,
-        "action_type": action_type,
-    }
+    return parsed_response

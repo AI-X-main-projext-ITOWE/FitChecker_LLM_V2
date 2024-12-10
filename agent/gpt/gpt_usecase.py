@@ -17,7 +17,6 @@ class GptUsecase:
 
     # 1단계 : advice or action 판단
     async def process_question(self, user_id: int, question: str) -> dict:
-        # 시스템 메시지를 문자열로 변환하여 `analyze` 함수에 전달
         system_message_str = self.system_message.content
         analyzed = await analyze(self.model, question, system_message_str)
         return analyzed
@@ -58,7 +57,6 @@ class GptUsecase:
 
         # 대화 기록 요약 생성
         chat_summary = user_history_manager.get_summary()
-        print(f"Debug: Chat Summary: {chat_summary}")
 
         # LLM 입력 생성
         llm_input = self.create_llm_input(question, chat_summary, rag_context)
@@ -84,7 +82,7 @@ class GptUsecase:
         return formatted_response
 
     async def call_with_function(self, question: str):
-    # 비동기 함수 호출 및 응답
+        # 비동기 함수 호출 및 응답
         response = await get_function_call_model(self.model_name, self.openai_api_key, question)
         print(f"call_with_function response: {response}")
 
@@ -92,11 +90,11 @@ class GptUsecase:
         if response and hasattr(response, 'choices') and len(response.choices) > 0:
             # 첫 번째 choice를 선택
             choice = response.choices[0]
-            
+
             # choice 내 message와 function_call 존재 여부 확인
             if hasattr(choice, 'message') and hasattr(choice.message, 'function_call'):
                 function_call = choice.message.function_call
-                
+
                 # function_call 내 arguments 확인
                 if hasattr(function_call, 'arguments'):
                     try:
@@ -104,22 +102,33 @@ class GptUsecase:
                         json_response = json.loads(function_call.arguments)
                         print(f"Parsed JSON response: {json_response}")
 
-                        # 알람 시간과 내용 추출
-                        alarm_time = json_response.get('alarm_time', '알람 시간이 지정되지 않았습니다.')
-                        alarm_text = json_response.get('alarm_text', '알람 내용이 지정되지 않았습니다.')
-                        print(f"alarm_time: {alarm_time}, alarm_text: {alarm_text}")
+                        # 함수 이름에 따라 처리
+                        function_name = function_call.name
+                        
+                        if function_name == "create_alarm":
+                            # 알람 데이터 처리
+                            alarm_time = json_response.get('alarm_time', '알람 시간이 지정되지 않았습니다.')
+                            alarm_text = json_response.get('alarm_text', '알람 내용이 지정되지 않았습니다.')
+                            print(f"알람 세부사항 - 시간: {alarm_time}, 내용: {alarm_text}")
+                            return {'alarm_time': alarm_time, 'alarm_text': alarm_text}
 
-                        # 추출한 데이터 반환
-                        return {'alarm_time': alarm_time, 'alarm_text': alarm_text}
+                        elif function_name == "create_counter":
+                            # 카운터 데이터 처리
+                            sets = json_response.get('sets', 0)
+                            reps_per_set = json_response.get('reps_per_set', 0)
+                            exercise = json_response.get('exercise', 'unknown')
+                            print(f"카운터 세부사항 - 세트 수: {sets}, 반복 횟수: {reps_per_set}, 운동 이름: {exercise}")
+                            return {'sets': sets, 'reps_per_set': reps_per_set, 'exercise': exercise}
+
                     except json.JSONDecodeError as e:
-                        print(f"Error parsing JSON from function call arguments: {e}")
+                        print(f"JSON 디코딩 오류: {e}")
                         return None
                 else:
-                    print("Function call does not contain arguments.")
+                    print("function_call에 arguments가 없습니다.")
                     return None
             else:
-                print("Function call not found in the response.")
+                print("function_call이 응답에 포함되어 있지 않습니다.")
                 return None
         else:
-            print("Invalid response or empty choices.")
+            print("유효하지 않은 응답 또는 빈 choices.")
             return None

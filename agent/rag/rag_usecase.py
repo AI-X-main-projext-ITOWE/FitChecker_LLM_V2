@@ -16,7 +16,7 @@ class RagUsecase():
         self.embedding_operator = EmbeddingOperator()
         self.elasticvector_db = ElasticVectorDB()
         self.elastic_search = Elastic_Search()
-        self.index_name = "embeddings_index8"
+        self.index_name = "embeddings_index7"
 
     #5. 역임베딩 (임베딩화 할 때 추가로 저장한 텍스트 추출)
     def extract_text(self, question : str):
@@ -30,6 +30,7 @@ class RagUsecase():
     def embedding_documents(self):
         #  1. 문서를 가져온다.
         pdf_file_path = get_pdf_folder_path()
+        print(pdf_file_path)
        #  2. 문서를 텍스트로 추출한다.
         pdf_sentence = extract_pdf_sentence(pdf_file_path)
         #  3. 텍스트를 청킹한다.
@@ -41,6 +42,7 @@ class RagUsecase():
         #  5. 디비에 저장.
             #5-1. 인덱스 생성 (문서 카테고리. 식단과 운동스케줄 등)
         self.elasticvector_db.create_index(index_name = self.index_name)
+        print(self.index_name)
         #5-2. 벡터 데이터 저장
         self.elasticvector_db.store_vector(index_name = self.index_name, embeddings = embeddings, text = chunks)
         
@@ -71,7 +73,8 @@ class RagUsecase():
     
         # print(f"Search results: {results}")
 
-        return results    
+        return results
+        
 
     
     

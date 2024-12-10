@@ -2,6 +2,7 @@ import sys
 import os
 
 from agent.dto.response.advice.advice_response import AdviceResponse
+from agent.dto.response.counter.counter_response import CounterResponse
 from agent.dto.response.recommend_response import RecommendResponse
 
 # 현재 파일 위치를 기준으로 프로젝트 루트 경로를 추가
@@ -31,7 +32,7 @@ class AgentUsecase:
         # RecommendRequest 객체 처리
         if request:
             user_id = request.user_id
-            question = f"{request.question}"
+            question = f"질문: {request.question}, 체중: {request.weight}kg, 키: {request.height}cm, 성별: {request.gender}, 나이: {request.age}"
         else:
             user_id = None
             question = None
@@ -40,13 +41,17 @@ class AgentUsecase:
         if input_type == "voice" and audio_bytes:
             question = self.voice_input.process_audio_bytes(audio_bytes)
         elif input_type == "text" and not question:
-            return {"response": "Text input is empty."}
+            return RecommendResponse(
+                advice_response=AdviceResponse(response="Text input is empty.")
+            )
 
         # GPT 분석 요청
         action_or_advice = await self.gpt_usecase.process_question(user_id, question)
 
+        # 초기화된 RecommendResponse 객체
+        recommend_response = RecommendResponse()
+
         if action_or_advice.get("is_advice_request"):
-            recommend_response = RecommendResponse()
             advice = AdviceResponse()
             
             # 조언 생성 로직
@@ -62,26 +67,31 @@ class AgentUsecase:
 
         elif action_or_advice.get("is_action_request"):
             action_type = action_or_advice.get("action_type")
-            action_data = action_or_advice.get("action_data", {})
 
-             # 2단계 액션 타입을 분리함
-            # 2-1단계
+            # 액션 타입에 따른 처리
             if action_type == "alarm":
-                
-
-                # 3단계 LLM한테 펑션콜 코드를 받아옴.
                 alarm_result = await self.gpt_usecase.call_with_function(question)
-                # 4단계 펑션콜 코드를 실행해서 파이어베이스에 알람을 등록한다.
                 firebase_response = await self.action_usecase.send_alarm(alarm_result)
+                recommend_response.alarm_response.response = firebase_response
+                return recommend_response
 
-                return firebase_response
-            # 특정 액션 실행
             elif action_type == "exercise_counter":
-                
-
+                # GPT 결과에서 운동 관련 정보 추출
                 exercise_counter_result = await self.gpt_usecase.call_with_function(question)
-                exercise_counter_response  = await self.action_usecase.send_exercise_counter(exercise_counter_result)
 
-                return exercise_counter_response 
+                # ActionUsecase 호출 및 데이터 검증
+                exercise_counter_list = self.action_usecase.send_exercise_counter(exercise_counter_result)
+            
 
-        return {"response": "Unable to determine the request type."}
+                # CounterResponse에 결과 저장
+                recommend_response.counter_response = CounterResponse(
+                    exercise=exercise_counter_list[0],
+                    exercise_set=exercise_counter_list[1],
+                    exercise_reps_per_set=exercise_counter_list[2],
+                    response="운동 카운터 처리 완료"
+                )
+
+                return recommend_response
+            # 요청 타입을 결정할 수 없는 경우 기본 응답 반환
+        recommend_response.advice_response.response = "Unable to determine the request type."
+        return recommend_response
