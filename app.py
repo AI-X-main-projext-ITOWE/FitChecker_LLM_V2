@@ -1,9 +1,3 @@
-import sys
-import os
-
-# 프로젝트 루트 디렉토리를 sys.path에 추가
-sys.path.append(os.path.dirname(os.path.abspath(__file__)))
-
 from fastapi import Body, FastAPI, Query
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
@@ -42,11 +36,8 @@ async def agents(request: RecommendRequest, input_type: str = Query(default="tex
     response = await agent_usecase.execute(request, input_type, audio_bytes)
     return {"response": response}
 
-
 if __name__ == "__main__":
-    
-    uvicorn.run("main:app", host="127.0.0.1", port=8000, reload=True)
-
+    uvicorn.run("app:app", host="0.0.0.0", port=8000, reload=True)
 
 # @app.get("/")
 # def read_root():
