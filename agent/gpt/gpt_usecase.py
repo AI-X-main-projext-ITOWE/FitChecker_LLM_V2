@@ -82,7 +82,7 @@ class GptUsecase:
         return formatted_response
 
     async def call_with_function(self, question: str):
-        # 비동기 함수 호출 및 응답
+    # 비동기 함수 호출 및 응답
         response = await get_function_call_model(self.model_name, self.openai_api_key, question)
         print(f"call_with_function response: {response}")
 
@@ -107,10 +107,12 @@ class GptUsecase:
                         
                         if function_name == "create_alarm":
                             # 알람 데이터 처리
+                            response = json_response.get('response', '답변이 지정되지 않았습니다.')
+                            
                             alarm_time = json_response.get('alarm_time', '알람 시간이 지정되지 않았습니다.')
                             alarm_text = json_response.get('alarm_text', '알람 내용이 지정되지 않았습니다.')
                             print(f"알람 세부사항 - 시간: {alarm_time}, 내용: {alarm_text}")
-                            return {'alarm_time': alarm_time, 'alarm_text': alarm_text}
+                            return {'response' : response, 'alarm_time': alarm_time, 'alarm_text': alarm_text}
 
                         elif function_name == "create_counter":
                             # 카운터 데이터 처리

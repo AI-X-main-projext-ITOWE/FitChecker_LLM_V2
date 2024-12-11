@@ -4,7 +4,11 @@ from agent.action.count.exercise_counter import exercise_counter
 class ActionUsecase:
 
     async def send_alarm(self, alarm_data: dict):
-
+        alarm_data = {
+                        'alarm_text' : alarm_data.get('alarm_text', ""),
+                        'alarm_time' : alarm_data.get('alarm_time', "")
+                      }
+        
         return await send_to_firebase(alarm_data)
 
     # 카운터 관련 메소드

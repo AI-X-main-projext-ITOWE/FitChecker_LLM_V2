@@ -2,6 +2,7 @@ import sys
 import os
 
 from agent.dto.response.advice.advice_response import AdviceResponse
+from agent.dto.response.alarm.alarm_response import AlarmResponse
 from agent.dto.response.counter.counter_response import CounterResponse
 from agent.dto.response.recommend_response import RecommendResponse
 
@@ -9,7 +10,7 @@ from agent.dto.response.recommend_response import RecommendResponse
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from agent.dto.request.recommend_request import RecommendRequest
-from agent.voice.input import *
+# from agent.voice.input import *
 from .rag.rag_usecase import RagUsecase
 from .gpt.gpt_usecase import GptUsecase
 from .action.action_usecase import*
@@ -22,7 +23,7 @@ class AgentUsecase:
     def __init__(self):
         self.gpt_usecase = GptUsecase()
         self.rag_usecase = RagUsecase()
-        self.voice_input = VoiceInput()
+        # self.voice_input = VoiceInput()
         self.action_usecase = ActionUsecase()
 
     async def execute(self, request: RecommendRequest = None, input_type: str = "text", audio_bytes: bytes = None) -> RecommendResponse:
@@ -50,7 +51,7 @@ class AgentUsecase:
 
         # 초기화된 RecommendResponse 객체
         recommend_response = RecommendResponse()
-
+        print(f"액션이냐 어드바이스냐 ?????? {action_or_advice}")
         if action_or_advice.get("is_advice_request"):
             advice = AdviceResponse()
             
@@ -59,6 +60,7 @@ class AgentUsecase:
             gpt_result_advice = await self.gpt_usecase.request_advice_llm(user_id, question, rag_result)
 
             # 어드바이스 리스폰스에 값을 담는다
+            advice.user_id = user_id
             advice.response = gpt_result_advice
             # 리커맨드 리스폰스에 어드바이스 리스폰스를 담아서 플러터에 전달
             recommend_response.advice_response = advice
@@ -67,14 +69,25 @@ class AgentUsecase:
 
         elif action_or_advice.get("is_action_request"):
             action_type = action_or_advice.get("action_type")
+            alarm = AlarmResponse()
 
             # 액션 타입에 따른 처리
             if action_type == "alarm":
-                alarm_result = await self.gpt_usecase.call_with_function(question)
-                firebase_response = await self.action_usecase.send_alarm(alarm_result)
-                recommend_response.alarm_response.response = firebase_response
-                return recommend_response
+    
 
+                # 3단계 LLM한테 펑션콜 코드를 받아옴.
+                alarm_result = await self.gpt_usecase.call_with_function(question)
+                # 4단계 펑션콜 코드를 실행해서 파이어베이스에 알람을 등록한다.
+                firebase_response = await self.action_usecase.send_alarm(alarm_result)
+                alarm.user_id = user_id
+                alarm.alarm_id = firebase_response['name']
+                alarm.alarm_time = alarm_result['alarm_time']
+                alarm.alarm_text = alarm_result['alarm_text']
+                alarm.response = alarm_result['response']
+                recommend_response.alarm_response = alarm
+
+                return recommend_response
+            # 특정 액션 실행
             elif action_type == "exercise_counter":
                 # GPT 결과에서 운동 관련 정보 추출
                 exercise_counter_result = await self.gpt_usecase.call_with_function(question)
@@ -85,9 +98,10 @@ class AgentUsecase:
 
                 # CounterResponse에 결과 저장
                 recommend_response.counter_response = CounterResponse(
+                    user_id=user_id,
                     exercise=exercise_counter_list[0],
                     exercise_set=exercise_counter_list[1],
-                    exercise_reps_per_set=exercise_counter_list[2],
+                    exercise_counter=exercise_counter_list[2],
                     response="운동 카운터 처리 완료"
                 )
 

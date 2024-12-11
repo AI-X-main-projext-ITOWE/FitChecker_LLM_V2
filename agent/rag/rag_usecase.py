@@ -1,4 +1,5 @@
 # 모듈 임포트
+from agent.rag.remove_advertisements.advertisements_operator import AdvertisementsOperator
 from agent.rag.search.search_operator import Elastic_Search
 from agent.rag.embedding_db.elasticsearch_embedding import *
 from agent.rag.chunking.chunk_operator import *
@@ -16,7 +17,8 @@ class RagUsecase():
         self.embedding_operator = EmbeddingOperator()
         self.elasticvector_db = ElasticVectorDB()
         self.elastic_search = Elastic_Search()
-        self.index_name = "embeddings_index7"
+        self.index_name = "embeddings_index8"
+        self.remove_advertisements = AdvertisementsOperator()
 
     #5. 역임베딩 (임베딩화 할 때 추가로 저장한 텍스트 추출)
     def extract_text(self, question : str):
@@ -28,13 +30,29 @@ class RagUsecase():
     
     
     def embedding_documents(self):
-        #  1. 문서를 가져온다.
+    # 1. 문서를 가져온다.
         pdf_file_path = get_pdf_folder_path()
+        # 2. 문서를 텍스트로 추출한다.
+        pdf_sentence = extract_pdf_sentence(pdf_file_path)  # 문자열
+        # 2-1. 문서에서 광고텍스트(리스트) 추출
+        advertisements_list = self.remove_advertisements.process_pdf_for_ads_only(pdf_file_path)
+
+        removed_values = []
+        for ad_text in advertisements_list:
+            if ad_text in pdf_sentence:
+                removed_values.append(ad_text)
+                pdf_sentence = pdf_sentence.replace(ad_text, "")
+
+        filtered_sentence = pdf_sentence.strip()
+
+        # print("Filtered sentence:", filtered_sentence)
+        # print("Removed values:", removed_values)
+
         print(pdf_file_path)
        #  2. 문서를 텍스트로 추출한다.
         pdf_sentence = extract_pdf_sentence(pdf_file_path)
         #  3. 텍스트를 청킹한다.
-        chunks = self.chunk_operator.text_spliter(pdf_sentence)
+        chunks = self.chunk_operator.text_spliter(filtered_sentence)
         #  4. 청킹된 데이터를 벡터임베딩한다.
         embeddings = []
         for chunk in chunks:

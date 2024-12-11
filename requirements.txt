@@ -1,3 +1,5 @@
+--index-url https://download.pytorch.org/whl/cu118
+
 acres==0.1.0
 aiohappyeyeballs==2.4.4
 aiohttp==3.11.10
@@ -96,3 +98,7 @@ urllib3==2.2.3
 uvicorn==0.32.1
 wheel==0.44.0
 yarl==1.18.3
+pdf2image
+pytesseract
+torchvision 
+torchaudio 

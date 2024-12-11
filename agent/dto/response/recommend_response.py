@@ -1,4 +1,5 @@
 from typing import Optional
+from typing import Optional
 from pydantic import BaseModel
 
 from agent.dto.response.advice.advice_response import AdviceResponse
@@ -9,3 +10,4 @@ class RecommendResponse(BaseModel):
     counter_response: Optional[CounterResponse] = None
     advice_response: Optional[AdviceResponse] = None
     alarm_response: Optional[AlarmResponse] = None
+    

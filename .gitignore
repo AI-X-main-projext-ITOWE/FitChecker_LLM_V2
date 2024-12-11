@@ -2,3 +2,4 @@
 cache/*
 cache_linux/* 
 __pycache__
+google-services.json

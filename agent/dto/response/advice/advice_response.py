@@ -2,4 +2,5 @@ from pydantic import BaseModel
 from typing import Optional
 
 class AdviceResponse(BaseModel):
-    response: Optional[str] = None  # 기본값 None으로 설정
+    user_id: Optional[str] = None
+    response: Optional[str] = None 
