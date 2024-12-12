@@ -74,16 +74,17 @@ class AgentUsecase:
             # 액션 타입에 따른 처리
             if action_type == "alarm":
     
-
                 # 3단계 LLM한테 펑션콜 코드를 받아옴.
                 alarm_result = await self.gpt_usecase.call_with_function(question)
                 # 4단계 펑션콜 코드를 실행해서 파이어베이스에 알람을 등록한다.
                 firebase_response = await self.action_usecase.send_alarm(alarm_result)
+
                 alarm.user_id = user_id
                 alarm.alarm_id = firebase_response['name']
                 alarm.alarm_time = alarm_result['alarm_time']
                 alarm.alarm_text = alarm_result['alarm_text']
                 alarm.response = alarm_result['response']
+
                 recommend_response.alarm_response = alarm
 
                 return recommend_response
@@ -95,7 +96,6 @@ class AgentUsecase:
                 # ActionUsecase 호출 및 데이터 검증
                 exercise_counter_list = self.action_usecase.send_exercise_counter(exercise_counter_result)
             
-
                 # CounterResponse에 결과 저장
                 recommend_response.counter_response = CounterResponse(
                     user_id=user_id,

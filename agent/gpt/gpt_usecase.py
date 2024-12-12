@@ -108,7 +108,6 @@ class GptUsecase:
                         if function_name == "create_alarm":
                             # 알람 데이터 처리
                             response = json_response.get('response', '답변이 지정되지 않았습니다.')
-                            
                             alarm_time = json_response.get('alarm_time', '알람 시간이 지정되지 않았습니다.')
                             alarm_text = json_response.get('alarm_text', '알람 내용이 지정되지 않았습니다.')
                             print(f"알람 세부사항 - 시간: {alarm_time}, 내용: {alarm_text}")

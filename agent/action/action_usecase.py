@@ -5,6 +5,7 @@ class ActionUsecase:
 
     async def send_alarm(self, alarm_data: dict):
         alarm_data = {
+                        'response' : alarm_data.get('response', ""),
                         'alarm_text' : alarm_data.get('alarm_text', ""),
                         'alarm_time' : alarm_data.get('alarm_time', "")
                       }
