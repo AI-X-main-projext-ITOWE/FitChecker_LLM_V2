@@ -1,13 +1,12 @@
 import sys
 import os
-
 from agent.dto.response.advice.advice_response import AdviceResponse
 from agent.dto.response.alarm.alarm_response import AlarmResponse
 from agent.dto.response.counter.counter_response import CounterResponse
 from agent.dto.response.recommend_response import RecommendResponse
 
 # 현재 파일 위치를 기준으로 프로젝트 루트 경로를 추가
-sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+# sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from agent.dto.request.recommend_request import RecommendRequest
 # from agent.voice.input import *
@@ -17,7 +16,7 @@ from .action.action_usecase import*
 from .gpt.gpt_usecase import GptUsecase
 from .dto.request.recommend_request import RecommendRequest
 from .action.action_usecase import *
-from .action.alarm.firebase_request import *
+from .action.alarm.alarm_usecase import *
 
 class AgentUsecase:
     def __init__(self):
@@ -33,6 +32,7 @@ class AgentUsecase:
         # RecommendRequest 객체 처리
         if request:
             user_id = request.user_id
+            fcm_token = request.fcm_token
             question = f"질문: {request.question}, 체중: {request.weight}kg, 키: {request.height}cm, 성별: {request.gender}, 나이: {request.age}"
         else:
             user_id = None
@@ -77,7 +77,7 @@ class AgentUsecase:
                 # 3단계 LLM한테 펑션콜 코드를 받아옴.
                 alarm_result = await self.gpt_usecase.call_with_function(question)
                 # 4단계 펑션콜 코드를 실행해서 파이어베이스에 알람을 등록한다.
-                firebase_response = await self.action_usecase.send_alarm(alarm_result)
+                firebase_response = await self.action_usecase.send_alarm(user_id, alarm_result, fcm_token)
 
                 alarm.user_id = user_id
                 alarm.alarm_id = firebase_response['name']

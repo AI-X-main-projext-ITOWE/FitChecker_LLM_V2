@@ -63,7 +63,6 @@ async def get_function_call_model(model_name: str, openai_api_key: str, question
                                 Response requirements:
                                 - `response`: After identifying any time-related details, determine if the user has additional requests. Provide a very detailed and contextually appropriate answer.
                                 - `alarm_text`: Include a simple notification message.
-
                                 Note: Please provide the response in Korean.
                     """,
                 "parameters": {
