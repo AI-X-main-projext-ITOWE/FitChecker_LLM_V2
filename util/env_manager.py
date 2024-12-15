@@ -33,5 +33,8 @@ def get_huggingface_token():
 def get_firebase_url():
     return os.getenv("FIREBASE_URL")
 
+def get_firebase_credentials():
+    return os.getenv("GOOGLE_APPLICATION_CREDENTIALS")
+
 def get_detect_ad_model():
     return os.getenv("DETECT_AD_MODEL")
