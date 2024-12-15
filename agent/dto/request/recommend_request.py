@@ -1,4 +1,5 @@
 from pydantic import BaseModel
+from typing import Optional
 
 class RecommendRequest(BaseModel):
     user_id: str
@@ -7,4 +8,4 @@ class RecommendRequest(BaseModel):
     height: float
     weight: float
     gender: str
-    question: str
+    question: Optional[str] = ""

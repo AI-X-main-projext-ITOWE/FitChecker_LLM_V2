@@ -1,4 +1,4 @@
-from fastapi import Body, FastAPI, File, Query, UploadFile
+from fastapi import Body, FastAPI, Query
 from fastapi import FastAPI
 from agent.action.alarm.scheduler.setup.scheduler_setup import scheduler
 from fastapi.middleware.cors import CORSMiddleware
@@ -32,17 +32,13 @@ app.add_middleware(
 )
 
 
-
 @app.post("/api/v1/agent")
 async def agents(
-    request: RecommendRequest = Body(None), input_type: str = Query(default="text"), audio_file: UploadFile = File(None)):
-
-    audio_bytes = None
-    if input_type == "voice" and audio_file:
-        audio_bytes = await audio_file.read()
-
-    response = await agent_usecase.execute(request, input_type, audio_bytes)
+    request: RecommendRequest = Body(None), input_type: str = Query(default="text"), audio_bytes: bytes = Body(default=None),):
+    response = await agent_usecase.execute(
+        request=request, input_type=input_type, audio_bytes=audio_bytes)
     return {"response": response}
+
 
 
 @app.get("/api/v1/embbeding")

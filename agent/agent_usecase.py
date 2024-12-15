@@ -29,22 +29,30 @@ class AgentUsecase:
         """
         요청의 타입에 따라 동작을 처리하는 메인 함수.
         """
-        # RecommendRequest 객체 처리
-        if request:
-            user_id = request.user_id
-            fcm_token = request.fcm_token
-            question = f"질문: {request.question}, 체중: {request.weight}kg, 키: {request.height}cm, 성별: {request.gender}, 나이: {request.age}"
-        else:
-            user_id = None
-            question = None
-
-        # 음성 입력 처리
-        if input_type == "voice" and audio_bytes:
-            question = self.voice_input.process_audio_bytes(audio_bytes)
-        elif input_type == "text" and not question:
+        if not request:
             return RecommendResponse(
-                advice_response=AdviceResponse(response="Text input is empty.")
+                advice_response=AdviceResponse(response="Request object is missing.")
             )
+
+        # 기본 정보 설정
+        user_id = request.user_id
+        fcm_token = request.fcm_token
+
+        # 입력 타입에 따른 텍스트 생성
+        if input_type == "voice" and audio_bytes:
+            input_text = self.voice_input.process_audio(audio_bytes)
+        elif input_type == "text" and request.question:
+            input_text = request.question
+        else:
+            return RecommendResponse(
+                advice_response=AdviceResponse(response="Input is empty or invalid.")
+            )
+
+        # 질문 생성
+        question = (
+            f"질문: {input_text}, 체중: {request.weight}kg, "
+            f"키: {request.height}cm, 성별: {request.gender}, 나이: {request.age}"
+        )
 
         # GPT 분석 요청
         action_or_advice = await self.gpt_usecase.process_question(user_id, question)
