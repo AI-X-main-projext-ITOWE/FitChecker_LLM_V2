@@ -1,33 +1,42 @@
-import io
-import wave
+import requests
 from fastapi import HTTPException
-import speech_recognition as sr
-
+from util.env_manager import get_openai_api_key
 
 class VoiceInput:
     def __init__(self):
-        self.recognizer = sr.Recognizer()  # SpeechRecognition 라이브러리의 음성 인식기 초기화
+        # OpenAI API 키 설정
+        self.openai_api_key = get_openai_api_key()
+        if not self.openai_api_key:
+            raise ValueError("환경 변수 'OPENAI_API_KEY'가 설정되지 않았습니다.")
 
-    def process_audio_bytes(self, audio_bytes: bytes) -> str:
-      
+    def process_audio_file(self, audio_file_path: str) -> str:
+        """
+        음성 파일 경로를 받아 Whisper API를 사용해 텍스트로 변환.
+        """
         try:
-            # 1. WAV 포맷인지 확인
-            try:
-                with wave.open(io.BytesIO(audio_bytes), 'rb') as wav_file:
-                    wav_file.getparams()  # WAV 파일의 메타데이터 확인
-            except wave.Error:
-                raise HTTPException(status_code=400, detail="Invalid WAV format.")  # WAV 포맷이 아니면 예외 발생
+            # Whisper API URL 및 헤더 설정
+            url = "https://api.openai.com/v1/audio/transcriptions"
+            headers = {"Authorization": f"Bearer {self.openai_api_key}"}
 
-            # 2. 음성 데이터를 텍스트로 변환
-            with sr.AudioFile(io.BytesIO(audio_bytes)) as source:
-                audio_data = self.recognizer.record(source)  # 음성 데이터를 로드
-            return self.recognizer.recognize_google(audio_data, language="ko-KR").strip()  # Google API로 텍스트 변환
+            # 파일을 OpenAI Whisper API로 전송
+            with open(audio_file_path, "rb") as audio_file:
+                files = {
+                    "file": (audio_file_path, audio_file, "audio/wav"),
+                    "model": (None, "whisper-1"),
+                }
+                response = requests.post(url, headers=headers, files=files)
+                response.raise_for_status()
 
-        except wave.Error:
-            raise HTTPException(status_code=400, detail="Invalid WAV format.")  # WAV 오류 처리
-        except sr.UnknownValueError:
-            raise HTTPException(status_code=400, detail="Speech could not be understood.")  # 음성 인식 실패 처리
-        except sr.RequestError as e:
-            raise HTTPException(status_code=500, detail=f"Speech recognition service error: {e}")  # API 요청 오류 처리
+            # Whisper API 응답 처리
+            transcript = response.json()
+            if "text" in transcript and transcript["text"].strip():
+                return transcript["text"].strip()
+            else:
+                raise HTTPException(status_code=500, detail="Failed to transcribe audio.")
+
+        except requests.exceptions.RequestException as e:
+            # HTTP 요청 오류 처리
+            raise HTTPException(status_code=500, detail=f"Whisper API call failed: {e}")
         except Exception as e:
-            raise HTTPException(status_code=500, detail=f"Audio processing error: {e}")  # 기타 오류 처리
+            # 일반적인 예외 처리
+            raise HTTPException(status_code=500, detail=f"Audio processing error: {e}")

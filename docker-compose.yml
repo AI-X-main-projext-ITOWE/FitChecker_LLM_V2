@@ -7,13 +7,12 @@ services:
       - xpack.security.enabled=false
       - xpack.security.http.ssl.enabled=false
       - xpack.security.transport.ssl.enabled=false
-      - ELASTICSEARCH_URL=${ELASTICSEARCH_URL}
     ports:
       - "9200:9200"
     networks:
       - network
     healthcheck:
-      test: ["CMD", "curl", "-f", ELASTICSEARCH_URL]
+      test: ["CMD", "curl", "-f", "http://localhost:9200"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -30,7 +29,7 @@ services:
       elasticsearch:
         condition: service_healthy
     environment:
-      - ELASTICSEARCH_URL
+      - ELASTICSEARCH_URL=http://elasticsearch:9200
       - SENTENCE_TRANSFORMER_MODEL=snunlp/KR-SBERT-V40K-klueNLI-augSTS
 
     env_file:

@@ -1,0 +1,6 @@
+[33m851bb81[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mgpt-branch[m[33m, [m[1;31morigin/gpt-branch[m[33m, [m[1;31morigin/agent-branch[m[33m)[m HEAD@{0}: checkout: moving from gpt-branch to gpt-branch
+[33m851bb81[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mgpt-branch[m[33m, [m[1;31morigin/gpt-branch[m[33m, [m[1;31morigin/agent-branch[m[33m)[m HEAD@{1}: reset: moving to HEAD
+[33m851bb81[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mgpt-branch[m[33m, [m[1;31morigin/gpt-branch[m[33m, [m[1;31morigin/agent-branch[m[33m)[m HEAD@{2}: checkout: moving from fcm-branch to gpt-branch
+[33m5af1f7f[m[33m ([m[1;31morigin/fcm-branch[m[33m, [m[1;32mfcm-branch[m[33m)[m HEAD@{3}: reset: moving to HEAD
+[33m5af1f7f[m[33m ([m[1;31morigin/fcm-branch[m[33m, [m[1;32mfcm-branch[m[33m)[m HEAD@{4}: pull origin fcm-branch: Fast-forward
+[33m851bb81[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mgpt-branch[m[33m, [m[1;31morigin/gpt-branch[m[33m, [m[1;31morigin/agent-branch[m[33m)[m HEAD@{5}: clone: from https://github.com/AI-X-main-projext-ITOWE/FitChecker_LLM_V2.git

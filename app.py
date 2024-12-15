@@ -1,4 +1,4 @@
-from fastapi import Body, FastAPI, Query
+from fastapi import Body, FastAPI, File, Query, UploadFile
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from agent.agent_usecase import AgentUsecase
@@ -20,10 +20,10 @@ agent_usecase = AgentUsecase()
 
 
 # cors 설정 
-cors_origins = get_cors_origins()
+cors_origins = get_cors_origins().split(",")
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[cors_origins],  # 특정 도메인만 허용
+    allow_origins=cors_origins,  # 여러 도메인을 허용
     allow_credentials=True,
     allow_methods=["GET", "POST"],  # 필요한 메서드만 허용
     allow_headers=["Content-Type", "Authorization"],  # 필요한 헤더만 허용
@@ -32,7 +32,13 @@ app.add_middleware(
 
 
 @app.post("/api/v1/agent")
-async def agents(request: RecommendRequest, input_type: str = Query(default="text"), audio_bytes: bytes = Body(None)):
+async def agents(
+    request: RecommendRequest = Body(None), input_type: str = Query(default="text"), audio_file: UploadFile = File(None)):
+
+    audio_bytes = None
+    if input_type == "voice" and audio_file:
+        audio_bytes = await audio_file.read()
+
     response = await agent_usecase.execute(request, input_type, audio_bytes)
     return {"response": response}
 

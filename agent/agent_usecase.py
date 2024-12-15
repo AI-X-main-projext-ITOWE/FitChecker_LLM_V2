@@ -10,7 +10,7 @@ from agent.dto.response.recommend_response import RecommendResponse
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from agent.dto.request.recommend_request import RecommendRequest
-# from agent.voice.input import *
+from agent.voice.input import *
 from .rag.rag_usecase import RagUsecase
 from .gpt.gpt_usecase import GptUsecase
 from .action.action_usecase import*
@@ -23,7 +23,7 @@ class AgentUsecase:
     def __init__(self):
         self.gpt_usecase = GptUsecase()
         self.rag_usecase = RagUsecase()
-        # self.voice_input = VoiceInput()
+        self.voice_input = VoiceInput()
         self.action_usecase = ActionUsecase()
 
     async def execute(self, request: RecommendRequest = None, input_type: str = "text", audio_bytes: bytes = None) -> RecommendResponse:
