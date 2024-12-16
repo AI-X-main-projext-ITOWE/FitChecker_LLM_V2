@@ -78,7 +78,7 @@ async def get_function_call_model(model_name: str, openai_api_key: str, question
             # Counter Function
             {
                 "name": "create_counter",
-                "description": "사용자의 내용을 보고 운동 세트와 횟수를 추출하여 반환하고 운동은 무조건 반드시 한글을 영어로 바꿔줘 예시 -> pull-up, push-up, sit-up, squat 이렇게 바꿔서 exercise에 넣어줘",
+                "description": "사용자의 요청을 분석하여 운동 세트와 횟수를 추출합니다. 운동 이름은 한국어 발음과 영어 이름을 고려해 변환해야 합니다. 예를 들어, '스쿼트'는 'squat', '풀업'은 'pull-up', '푸쉬업'은 'push-up', '싯업'은 'sit-up'으로 변환합니다. 사용자가 '몇 세트 몇 회 운동 이름'을 언급하며 수행 의도를 나타내면 이를 Action으로 처리하고 결과를 반환하세요.",
                 "parameters": {
                     "type": "object",
                     "properties": {

@@ -3,7 +3,6 @@ import requests
 import speech_recognition as sr
 import os
 from agent.dto.request.recommend_request import RecommendRequest
-from agent.voice.input import VoiceInput
 from agent.agent_usecase import AgentUsecase
 
 async def test_full_agent_logic_with_microphone():
@@ -11,7 +10,6 @@ async def test_full_agent_logic_with_microphone():
     마이크로 음성을 입력받아 Whisper API를 통해 텍스트로 변환한 후, AgentUsecase로 처리.
     """
     recognizer = sr.Recognizer()
-    voice_input = VoiceInput()  # VoiceInput 클래스 인스턴스 생성
     agent_usecase = AgentUsecase()
 
     print("마이크로 실시간 음성을 입력하세요...")
