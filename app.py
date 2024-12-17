@@ -1,8 +1,6 @@
 from fastapi import Body, FastAPI, Query
 from fastapi import FastAPI
-from agent.action.alarm.scheduler.setup.scheduler_setup import scheduler
 from fastapi.middleware.cors import CORSMiddleware
-from agent.action.alarm.init.firebase_init import *
 from agent.agent_usecase import AgentUsecase
 import uvicorn
 from agent.dto.request.recommend_request import RecommendRequest
@@ -16,7 +14,6 @@ import os
 
 # 프로젝트 루트 디렉토리를 경로에 추가
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
-initalize_firebase()
 app = FastAPI()
 agent_usecase = AgentUsecase()
 

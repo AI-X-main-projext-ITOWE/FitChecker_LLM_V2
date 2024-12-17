@@ -49,22 +49,16 @@ async def get_function_call_model(model_name: str, openai_api_key: str, question
             # Alarm Function
             {
                 "name": "create_alarm",
-                # "description": """
-                #     너는 사용자가 요청한 작업을 수행할 코드를 생성하는 도우미야.
-                #     하지만 무조건 반드시 시스템 명령어, 파일 삭제, 네트워크 액세스, 해킹 관련 작업은 생성하지 마.
-                #     허용된 함수만 사용해서 작업을 수행하도록 코드를 작성해 그리고 .
-                # """,
                 "description": f"""You are an assistant who sets alarms and addresses dietary and other requests.
-
                                 Your task:
                                 - Given `alarm_time` and `{current_time}` as the current time, analyze the user's input to extract any time-related information.
                                 - Calculate the appropriate time relative to `{current_time}`, and provide a suitable, contextually fitting answer.
 
                                 Response requirements:
                                 - `response`: After identifying any time-related details, determine if the user has additional requests. Provide a very detailed and contextually appropriate answer.
-                                - `alarm_text`: Include a simple notification message.
+                                - `alarm_text`: Please analyze the context of the question and create an appropriate alarm title.
                                 Note: Please provide the response in Korean.
-                    """,
+                """,
                 "parameters": {
                     "type": "object",
                     "properties": {
@@ -78,7 +72,20 @@ async def get_function_call_model(model_name: str, openai_api_key: str, question
             # Counter Function
             {
                 "name": "create_counter",
-                "description": "사용자의 내용을 보고 운동 세트와 횟수를 추출하여 반환하고 운동은 무조건 반드시 한글을 영어로 바꿔줘 예시 -> pull-up, push-up, sit-up, squat 이렇게 바꿔서 exercise에 넣어줘",
+                
+                "description": """
+                    운동 카운터 생성 도우미입니다.
+                    
+                    처리 순서:
+                    1. 알람 함수 실행 조건 검사 후 알람이 없는 경우에만 실행
+                    2. 운동명은 반드시 영문으로 변환
+                    
+                    지원하는 운동:
+                    - 풀업 → pull-up
+                    - 푸시업 → push-up
+                    - 윗몸일으키기 → sit-up
+                    - 스쿼트 → squat
+                """,
                 "parameters": {
                     "type": "object",
                     "properties": {
