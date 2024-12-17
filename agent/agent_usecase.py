@@ -80,7 +80,7 @@ class AgentUsecase:
                 firebase_response = await self.action_usecase.send_alarm(user_id, alarm_result, fcm_token)
 
                 alarm.user_id = user_id
-                alarm.alarm_id = firebase_response['name']
+                alarm.alarm_id = firebase_response['alarm_id']
                 alarm.alarm_time = alarm_result['alarm_time']
                 alarm.alarm_text = alarm_result['alarm_text']
                 alarm.response = alarm_result['response']

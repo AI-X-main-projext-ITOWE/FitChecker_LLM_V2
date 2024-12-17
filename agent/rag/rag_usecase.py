@@ -66,7 +66,7 @@ class RagUsecase():
         
         vectors = self.elasticvector_db.fetch_vector(index_name = self.index_name)
         
-        return vectors
+        return "임베딩 성공"
                 
     def embedding_query(self, question:str):
         #1. 사용자 입력 쿼리를 가져와 청킹한다
