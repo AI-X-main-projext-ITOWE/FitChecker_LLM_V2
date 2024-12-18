@@ -3,7 +3,6 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from agent.agent_usecase import AgentUsecase
 import uvicorn
-from agent.dto.request.recommend_request import RecommendRequest
 from agent.dto.request.recommend_request import *
 from util.env_manager import *
 from agent.rag.rag_usecase import *
