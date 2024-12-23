@@ -1,3 +1,4 @@
+from zoneinfo import ZoneInfo
 from langchain_openai import ChatOpenAI
 from openai import OpenAI
 from util.env_manager import *
@@ -39,14 +40,17 @@ def get_gpt_model(model_name: str, openai_api_key: str, temperature: float, max_
 async def get_function_call_model(model_name: str, openai_api_key: str, question: str):
     
     client = OpenAI(api_key=openai_api_key)
-    current_time = datetime.now()
+    kst = ZoneInfo("Asia/Seoul")
+    now_kst = datetime.now(kst)
+    
+    current_time = now_kst.strftime("%Y-%m-%d %H:%M:%S")
 
     # GPT-4 Function Call API 호출
     response = client.chat.completions.create(
         model=model_name,  # GPT-4 모델 사용
         messages=[{"role": "user", "content": str(question)}],
         functions=[
-            # Alarm Function
+            # Alarm Functioncd 
             {
                 "name": "create_alarm",
                 "description": f"""You are an assistant who sets alarms and addresses dietary and other requests.
